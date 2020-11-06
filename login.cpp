@@ -5,13 +5,16 @@
 #include <stdio.h>
 #include <vector> 
 #include <string.h>
+#include <termios.h>
 
 using namespace std;
 
 #include "openssl/sha.h"
 
+//Global variables for username and passwords cause it's easy
 string user[2];
 string hashedPasses[2];
+
 #define BuffSize 1024
 
 int checkFile(){ //Open file and translates to users and hashed passwords
@@ -25,15 +28,17 @@ int checkFile(){ //Open file and translates to users and hashed passwords
 
     //Repeat till end of file
     while(getline(hashedPass,line)){
-      vector<string> vect;
+      vector<string> vect; //tempory vector for storing output of string split probably overkill but does the job
       stringstream ss(line);
 
+      // While input stream isn't empty look until next delimiter and add to vector
       while(ss.good()){
         string substr;
         getline(ss, substr, ':');
         vect.push_back(substr);
       }
       
+      // We want first bit username and bit after : to be the hased password
       user[count] = vect[0];
       hashedPasses[count] = vect[1];
 
@@ -41,10 +46,11 @@ int checkFile(){ //Open file and translates to users and hashed passwords
     }
   }
   else cout << "Failed to open file 3791570.txt";
+  
   hashedPass.close();
 
-  cout << "user1 = " << user[0] << "  pass1 = " << hashedPasses[0] <<'\n';
-  cout << "user2 = " << user[1] << "  pass2 = " << hashedPasses[1] <<'\n';
+  cout << "user1 = " << user[0] << "  pass1 = " << hashedPasses[0] <<"\n";
+  cout << "user2 = " << user[1] << "  pass2 = " << hashedPasses[1] <<"\n\n";
   
   return 0;
 }
@@ -66,37 +72,48 @@ void sha256_string(char *string, char outputBuffer[65])
 }
 
 int main() {
+  /*
+  //DO NOT OPEN
+  //https://bit.ly/3k3gxAh
+  */
+  
+  checkFile(); //initalise file into variables correctly
+
+  // User gets 3 attempts to get user and password correct
   bool auth = false;
-  checkFile();
+  int attempts=3;
 
-  string userEntered;
-  string passEntered;
+  while(attempts>0 && !auth){
+    string userEntered;
+    string passEntered;
 
-  cout << "Please enter your username: ";
-  cin >> userEntered;
-  cout << "Please enter your password: ";
-  cin >> passEntered;
+    cout << "Please enter your username: ";
+    cin >> userEntered;
+    cout << "Please enter your password: ";
+    cin >> passEntered;
 
+    static char buffer[65]; //Output buffer to be filled with hased version of entered password
+    char charpassEntered[256]; //Function takes array char so this used instead of straight string
+    strcpy(charpassEntered, passEntered.c_str()); //Converts string to char
 
-  static char buffer[65];
-  char charpassEntered[256];
-  strcpy(charpassEntered, passEntered.c_str());
+    sha256_string(charpassEntered, buffer); //Converts password to hash
 
-  sha256_string(charpassEntered, buffer);
-
-  for (int i=0; i < 2; i++)
-  {
-    if(userEntered==user[i] && buffer==hashedPasses[i]){ //Checks username and hashed version of enter password against file values
-      auth = true;
-      break;
+    for (int i=0; i < 2; i++) // SHOULD BE WHILE NUMBER OF LINES OR SOMETHING
+    {
+      if(userEntered==user[i] && buffer==hashedPasses[i]){ //Checks username and hashed version of entered password against assigned variables
+        auth = true;
+        break; // stop looking through list if found
+      }
     }
+    attempts--;
   }
+
   
   if (auth){
-    cout << "username is correct \ndunno about password \n";
     authenticated("user");
   } 
   else rejected("user");
 
+  cout << "---LOGOUT---" << endl;
   return 0;
 }
