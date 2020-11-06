@@ -5,7 +5,6 @@
 #include <stdio.h>
 #include <vector> 
 #include <string.h>
-#include <termios.h>
 
 using namespace std;
 
@@ -49,8 +48,8 @@ int checkFile(){ //Open file and translates to users and hashed passwords
   
   hashedPass.close();
 
-  cout << "user1 = " << user[0] << "  pass1 = " << hashedPasses[0] <<"\n";
-  cout << "user2 = " << user[1] << "  pass2 = " << hashedPasses[1] <<"\n\n";
+  //cout << "user1 = " << user[0] << "  pass1 = " << hashedPasses[0] <<"\n";
+  //cout << "user2 = " << user[1] << "  pass2 = " << hashedPasses[1] <<"\n\n";
   
   return 0;
 }
@@ -98,13 +97,18 @@ int main() {
 
     sha256_string(charpassEntered, buffer); //Converts password to hash
 
-    for (int i=0; i < 2; i++) // SHOULD BE WHILE NUMBER OF LINES OR SOMETHING
+    for (long unsigned int i=0; i < sizeof(user); i++) // Loop for length of user
     {
       if(userEntered==user[i] && buffer==hashedPasses[i]){ //Checks username and hashed version of entered password against assigned variables
         auth = true;
         break; // stop looking through list if found
       }
     }
+
+    if(!auth){
+      cout << "TRY AGAIN, Attempts left: " << attempts << "\n\n";
+    }
+
     attempts--;
   }
 
@@ -114,6 +118,5 @@ int main() {
   } 
   else rejected("user");
 
-  cout << "---LOGOUT---" << endl;
   return 0;
 }
