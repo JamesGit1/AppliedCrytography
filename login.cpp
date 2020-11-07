@@ -81,10 +81,11 @@ int main() {
   // User gets 3 attempts to get user and password correct
   bool auth = false;
   int attempts=3;
+  string userEntered;
+  string passEntered;
 
   while(attempts>0 && !auth){
-    string userEntered;
-    string passEntered;
+    
 
     cout << "Please enter your username: ";
     cin >> userEntered;
@@ -114,9 +115,9 @@ int main() {
 
   
   if (auth){
-    authenticated("user");
+    authenticated(userEntered);
   } 
-  else rejected("user");
+  else rejected(userEntered);
 
   return 0;
 }
